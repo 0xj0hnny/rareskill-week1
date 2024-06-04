@@ -10,6 +10,7 @@ import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol"
 contract GodModeTokenTest is Test {
     GodModeToken public godModeToken;
     address godAddress = address(99);
+    uint256 amount = 10_000 * 10 ** 18;
 
     function setUp() public {
         godModeToken = new GodModeToken(godAddress);
@@ -18,14 +19,14 @@ contract GodModeTokenTest is Test {
     function test_TokenInfo() public view {
         assertEq(godModeToken.name(), "GodModeToken");
         assertEq(godModeToken.symbol(), "God");
-        assertEq(godModeToken.totalSupply(), 10_000 * 10 ** 18);
+        assertEq(godModeToken.totalSupply(), amount);
     }
 
-    function testTokenTransfer() public {
+    function test_TokenTransfer() public {
         address contractOwner = address(this);
         address Alice = address(1);
-        uint256 amount = 900 * 10 ** 18;
-
+        uint256 mintAmount = 900 * 10 ** 18;
+        uint256 godGiven = 700 * 10 ** 18;
         vm.prank(contractOwner);
         
         // admin set Alice to be banned
@@ -33,11 +34,18 @@ contract GodModeTokenTest is Test {
         
         // transfer tokens to Alice and expected tx to be reverted
         vm.expectRevert();
-        godModeToken.transfer(Alice, amount);
-
-        // god transfer tokens to Alice and expected Alice has the expected amount
+        godModeToken.transfer(Alice, mintAmount);
+        assertEq(godModeToken.balanceOf(Alice), 0);
+        
+        // god mint some tokens
         vm.prank(godAddress);
-        godModeToken.transfer(Alice, amount);
-        assertEq(godModeToken.balanceOf(Alice), amount);
+        godModeToken.mint(mintAmount);
+        assertEq(godModeToken.balanceOf(godAddress), mintAmount);
+        
+        // god transfer tokens to Alice and expected Alice has the expected mintAmount
+        vm.prank(godAddress);
+        godModeToken.godTransfer(Alice, godGiven);
+        assertEq(godModeToken.balanceOf(Alice), godGiven);
+        assertEq(godModeToken.balanceOf(godAddress), mintAmount - godGiven);
     }
 }

@@ -50,6 +50,13 @@ contract GodModeToken is ERC20, Ownable {
         return super.transfer(to, value);
     }
 
+    /// @notice mint function - override default ERC20 contract function
+    /// @param amount number of tokens to send
+    function mint(uint256 amount) external {
+        require(amount > 0, "amount less than 0");
+        _mint(msg.sender, amount);
+    }
+
     /// @notice transferFrom function - override default ERC20 contract function
     /// @param from address `from` send to, require `from` address is not banned 
     /// @param to address `to` send to, require `to` address is not banned

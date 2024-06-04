@@ -5,8 +5,8 @@ import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol"
 import { SafeERC20 } from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import { Ownable } from "openzeppelin-contracts/contracts/access/Ownable.sol";
 
-contract UntrustedEscowContract is Ownable {
-  using SafeERC20 for ERC20;
+contract UntrustedEscow is Ownable {
+  using SafeERC20 for IERC20;
 
   struct Deposit {
     address token;
@@ -21,7 +21,9 @@ contract UntrustedEscowContract is Ownable {
   event Deposited (address indexed account, address indexed token, uint256 amount);
   event Withdrawn (address indexed account, address indexed token, uint256 amount);
 
-  function deposit(address token, uint256 amount) exteral {
+  constructor() Ownable(msg.sender) {}
+
+  function deposit(address token, uint256 amount) external {
     IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
 
     usersDeposit[msg.sender] = Deposit({
@@ -35,10 +37,10 @@ contract UntrustedEscowContract is Ownable {
   function withdraw(uint256 amount) external {
     require(usersDeposit[msg.sender].amount > 0, "Insufficient amount withdraw");
     require(usersDeposit[msg.sender].allowWithdrawTime < block.timestamp, "withdraw not allow yet");
-    Deposit memory deposit = Deposit[msg.sender];
-    IERC20(deposit.token).safeTransfer(address(this), msg.sender, deposit.amount);
+    Deposit memory existingDeposit = usersDeposit[msg.sender];
+    IERC20(existingDeposit.token).safeTransferFrom(address(this), msg.sender, existingDeposit.amount);
     delete usersDeposit[msg.sender];
-    emit Withdrawn(msg.sender, token, amount);
+    emit Withdrawn(msg.sender, existingDeposit.token, amount);
   }
 
 }
