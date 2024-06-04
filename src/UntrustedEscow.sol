@@ -14,7 +14,7 @@ contract UntrustedEscow is Ownable {
     uint256 allowWithdrawTime;
   }
 
-  mapping (address => Deposit) public usersDeposit;
+  mapping (address => Deposit) private usersDeposit;
 
   uint256 public constant WITHDRAW_TIME = 3 days;
 
@@ -38,9 +38,15 @@ contract UntrustedEscow is Ownable {
     require(usersDeposit[msg.sender].amount > 0, "Insufficient amount withdraw");
     require(usersDeposit[msg.sender].allowWithdrawTime < block.timestamp, "withdraw not allow yet");
     Deposit memory existingDeposit = usersDeposit[msg.sender];
-    IERC20(existingDeposit.token).safeTransferFrom(address(this), msg.sender, existingDeposit.amount);
+    IERC20(existingDeposit.token).safeTransfer(msg.sender, existingDeposit.amount);
     delete usersDeposit[msg.sender];
     emit Withdrawn(msg.sender, existingDeposit.token, amount);
+  }
+
+  function getCurrentDepositInfo(address account) external view returns (Deposit memory) {
+    require(account != address(0), "zero address");
+    Deposit memory existingDeposit = usersDeposit[msg.sender];
+    return existingDeposit;
   }
 
 }
