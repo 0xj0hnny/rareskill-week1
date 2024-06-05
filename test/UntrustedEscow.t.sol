@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import {Test, console} from "forge-std/Test.sol";
 import {UntrustedEscow} from "../src/UntrustedEscow.sol";
-import {MockERC20} from "./MockERC20.t.sol";
+import {MockERC20} from "./mock/MockERC20.t.sol";
 
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
